@@ -1,0 +1,20 @@
+{
+    "cam_id": 1,
+    "start_frame_time": 1594393044811,
+    "end_frame_time": 1594393383718,
+    "img_width": 160,
+    "img_height": 120,
+    "min_points_in_path": 5,
+    "write_paths_to_dynamo": true,
+    "clear_paths_frame_interval": 5,
+    "round_places": 2,
+    "max_snake_len": 20,
+    "heatmap_cols":25,
+    "count_line": [[0, 0.625], [1, 0.4167]],
+    "transformation_shape": [120,160],
+    "camera_roi_length": 15,
+    "roi_ground_coverage": 20,
+    "speed_divider": 0.03125,
+    "social_distance_guideline": 0.1875,
+    "corner_points": [[0.8516, 0.2854], [0.0094, 0.4563], [0.989, 0.9583], [0.3609, 0.9792]]
+}
