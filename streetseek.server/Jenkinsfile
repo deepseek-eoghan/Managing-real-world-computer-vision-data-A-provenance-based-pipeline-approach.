@@ -1,0 +1,100 @@
+pipeline {
+  agent any
+  stages {
+    stage('Checkout Scm') {
+      steps {
+        git 'git@bitbucket.org:deepseek/streetseek.server.git'
+      }
+    }
+
+    stage('No Converter-0') {
+      steps {
+        echo 'No converter for Builder: org.jenkinsci.plugins.envinject.EnvInjectBuilder'
+      }
+    }
+
+    stage('Shell script 0') {
+      steps {
+        sh 'npm install'
+      }
+    }
+
+    stage('No Converter-1') {
+      steps {
+        echo 'No converter for Builder: jenkins.plugins.docker_compose.DockerComposeBuilder'
+      }
+    }
+
+    stage('No Converter-2') {
+      steps {
+        echo 'No converter for Builder: jenkins.plugins.nodejs.NodeJSCommandInterpreter'
+      }
+    }
+
+    stage('Shell script 1') {
+      steps {
+        sh 'npm run test'
+      }
+    }
+
+    stage('No Converter-3') {
+      steps {
+        echo 'No converter for Builder: org.jenkinsci.plugins.dockerbuildstep.DockerBuilder'
+      }
+    }
+
+    stage('No Converter-4') {
+      steps {
+        echo 'No converter for Builder: org.jenkinsci.plugins.dockerbuildstep.DockerBuilder'
+      }
+    }
+
+    stage('Shell script 2') {
+      steps {
+        sh 'openapi-generator generate -i server/common/api.yml -g javascript -o /home/ec2-user/streetseek.javascript.sdk --additional-properties=usePromises=true --skip-validate-spec'
+      }
+    }
+
+    stage('Shell script 3') {
+      steps {
+        sh '''cd /home/ec2-user/streetseek.javascript.sdk
+
+sed -i "1s/.*/${BUILD_NUMBER}/" version.md
+
+json -I -f package.json -e "this.version=\'1.0.${BUILD_NUMBER}\'"
+
+git add .
+
+git commit -q -m "Automated build by Jenkins ${BUILD_NUMBER}"
+
+git push --quiet -f'''
+      }
+    }
+
+    stage('Shell script 4') {
+      steps {
+        sh '''cd /home/ec2-user/streetseek.javascript.sdk
+
+npm install
+
+npm publish'''
+      }
+    }
+
+    stage('No Converter-5') {
+      steps {
+        echo 'No converter for Builder: jenkins.plugins.docker_compose.DockerComposeBuilder'
+      }
+    }
+
+    stage('No Converter-6') {
+      steps {
+        echo 'No converter for Builder: org.jenkinsci.plugins.dockerbuildstep.DockerBuilder'
+      }
+    }
+
+  }
+  options {
+    buildDiscarder(logRotator(daysToKeepStr: '1', numToKeepStr: '5'))
+  }
+}

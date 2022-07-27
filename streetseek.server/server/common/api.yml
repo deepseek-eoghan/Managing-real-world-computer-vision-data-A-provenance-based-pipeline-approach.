@@ -1,0 +1,1494 @@
+openapi: 3.0.1
+info:
+  title: Streetseek Server
+  description: streetseek.server
+  version: 1.0.0
+servers:
+  - url: /api/v1
+tags:
+  - name: CameraConfiguration
+    description: Camera configuration endpoints.
+  - name: CameraInsights
+    description: Camera capture endpoints.
+  - name: CameraInsightGenerator
+    description: Camera insight generator.
+  - name: Specification
+    description: The swagger API specification
+
+paths:
+  # <CameraConfiguration>
+  /camera-configuration/setup-camera:
+    post:
+      tags:
+        - CameraConfiguration
+      description: Set up a new camera.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Camera'
+      responses:
+        200:
+          description: Sucessful creation of new camera
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Camera setup correctly.
+        500:
+          description: Failed creation of new camera
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Camera build configuration failed.
+
+  /camera-configuration/cameras:
+    get:
+      tags:
+        - CameraConfiguration
+      description: Get all camera details.
+      responses:
+        200:
+          description: An array of camera details
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CameraBody'
+  
+  /camera-configuration/camera/name/by/id/{cameraId}:
+    get:
+      tags:
+        - CameraConfiguration
+      description: Get a cameras name by the ID.
+      parameters:
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera
+      responses:
+        200:
+          description: A name for a given camera
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CameraName'
+
+  /camera-configuration/camera/{cameraId}:
+    get:
+      tags:
+        - CameraConfiguration
+      description: Get camera details by ID.
+      parameters:
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera
+      responses:
+        200: 
+          description: A singular cameras details
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/CameraBody'
+
+  /camera-configuration/set-build-config:
+    post:
+      tags:
+        - CameraConfiguration
+      description: Set a build config for a given camera.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CameraBuildConfig'
+      responses:
+        200:
+          description: Sucessful creation of new camera build config
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Camera build configuration set correctly
+        500:
+          description: Failed creation of camera build config
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Camera build configuration failed
+
+  /camera-configuration/set-app-config:
+    post:
+      tags:
+        - CameraConfiguration
+      description: Set an app config for a given camera.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CameraAppConfig'
+      responses:
+        200:
+          description: Sucessful creation of new camera app config
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Camera app configuration set correctly
+        500:
+          description: Failed creation off a camera app config
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Camera app configurations failed
+
+  # </CameraConfiguration>
+
+  # <CameraInsights>
+
+  /camera-insights/upload-insight:
+    post:
+      tags: 
+        - CameraInsights
+      description: Post camera insight 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CameraInsights'
+      responses:
+        200:
+          description: Sucessful creation of new camera insight
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Insight written
+        500:
+          description: Failed creation of a camera insight
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Insight failed to write
+
+  /camera-insights/daily-aggregator:
+    post:
+      tags:
+        - CameraInsights
+      description: Aggregate all metrics up to a day
+      requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - date
+                  - cameraId
+                properties:
+                  date:
+                    type: string
+                    example: "2020-07-01"
+                  cameraId:
+                    type: integer
+                    example: 1
+      responses:
+        200:
+          description: Sucessful creation of metric aggregation
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Aggregation sucessfully written
+        500:
+          description: Failed creation of a metric aggregation
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Aggregation failed to be written
+
+  /camera-insights/person-count/{date}/by/hour/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      description: Get persons counted for a full day on a given date on an hourly interval.
+      parameters:
+        - name: date
+          in: path
+          schema: 
+            type: string
+          required: true
+          description: Date from which to retrieve data.
+        - name: cameraId
+          in: path
+          schema: 
+            type: string
+          required: true
+          description: Date from which to retrieve data.
+      responses:
+        200: 
+          description: An array of hourly person counts
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CameraPersonCount'
+
+  /camera-insights/person-count/{date}/minute/interval/{interval}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      description: Get persons counted for a full day on a given date with a chosen minute based interval.
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: interval
+          in: path
+          schema:
+            type: integer
+            minimum: 5
+            maximum: 60
+          required: true
+          description: Interval of data number in range [5 ... 50]
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: An array of person counts on chosen interval.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CameraPersonCount'
+
+  /camera-insights/person-count/total/for/day/{date}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      description: Get total persons counted for a given day based on a camera id.
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: A total count for a given camera.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/TotalCameraPersonCount'
+
+  /camera-insights/person-count/total/per/day/between/dates/start/{startDate}/end/{endDate}/by/camera/id/{cameraId}:
+    get: 
+      tags:
+        - CameraInsights
+      description: Get total persons per day between 2 dates.
+      parameters:
+        - name: startDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: First date to retrieve.
+        - name: endDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Last date in range.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: A total count for a given camera.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TotalCameraPersonCount'
+
+  /camera-insights/social-distancing/average/total/per/day/between/dates/start/{startDate}/end/{endDate}/by/camera/id/{cameraId}:
+    get: 
+      tags:
+        - CameraInsights
+      description: Get total average social distancing compliance per day between 2 dates.
+      parameters:
+        - name: startDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: First date to retrieve.
+        - name: endDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Last date in range.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: A array of daily total averages social distancing complicance for a given camera.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TotalCameraSocialDistanceAvg'
+
+  /camera-insights/social-distancing/average/{date}/minute/interval/{interval}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      description: Get average social distance compliance for a full day on a given date with a chosen minute based interval.
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: interval
+          in: path
+          schema:
+            type: integer
+            minimum: 5
+            maximum: 60
+          required: true
+          description: Interval of data number in range [5 ... 50]
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: An array of hourly person counts
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CameraSocialDistAvg'
+
+  /camera-insights/social-distancing/average/total/for/day/{date}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200:
+          description: An average measure of the social distance compliance over the course of a day.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/TotalCameraSocialDistanceAvg'
+
+  /camera-insights/walking-pace/average/{date}/minute/interval/{interval}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: interval
+          in: path
+          schema:
+            type: integer
+            minimum: 5
+            maximum: 60
+          required: true
+          description: Interval of data number in range [5 ... 50]
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: An array of hourly person counts
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CameraWalkingPace'
+
+  /camera-insights/walking-pace/average/total/per/day/between/dates/start/{startDate}/end/{endDate}/by/camera/id/{cameraId}:
+    get: 
+      tags:
+        - CameraInsights
+      description: Get total average walking pace per day between 2 dates.
+      parameters:
+        - name: startDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: First date to retrieve.
+        - name: endDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Last date in range.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: A array of daily total average walking paces for a given camera.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TotalCameraWalkingPace'
+
+  /camera-insights/walking-pace/average/total/for/day/{date}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200:
+          description: An average measure of the social distance compliance over the course of a day.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/TotalCameraWalkingPace'
+
+  /camera-insights/time-spent/average/{date}/minute/interval/{interval}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: interval
+          in: path
+          schema:
+            type: integer
+            minimum: 5
+            maximum: 60
+          required: true
+          description: Interval of data number in range [5 ... 50]
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: An array of hourly person counts
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CameraTimeSpent'
+
+  /camera-insights/time-spent/average/total/for/day/{date}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200:
+          description: An average measure of the social distance compliance over the course of a day.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/TotalCameraTimeSpent'
+
+  /camera-insights/time-spent/average/total/per/day/between/dates/start/{startDate}/end/{endDate}/by/camera/id/{cameraId}:
+    get: 
+      tags:
+        - CameraInsights
+      description: Get total average time spent for each day between 2 dates.
+      parameters:
+        - name: startDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: First date to retrieve.
+        - name: endDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Last date in range.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: A total average time spent for each day between 2 dates.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TotalCameraTimeSpent'
+
+  /camera-insights/density/average/total/for/day/{date}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200:
+          description: An average measure of density over the course of a day.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/TotalCameraDensity'
+
+  /camera-insights/density/average/total/per/day/between/dates/start/{startDate}/end/{endDate}/by/camera/id/{cameraId}:
+    get: 
+      tags:
+        - CameraInsights
+      description: Get total average density for each day between 2 dates.
+      parameters:
+        - name: startDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: First date to retrieve.
+        - name: endDate
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Last date in range.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200: 
+          description: A total count for a given camera.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TotalCameraDensity'
+
+  /camera-insights/heatmap/total/for/day/{date}/by/camera/id/{cameraId}:
+    get:
+      tags:
+        - CameraInsights
+      parameters:
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Date to retrieve data from.
+        - name: cameraId
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of camera.
+      responses:
+        200:
+          description: An average measure of the social distance compliance over the course of a day.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Heatmap'
+
+  # </CameraInsights>
+
+  # <CameraInsightGenerator>
+
+  /camera-insight-generator/config/by/stream-name/{streamName}:
+    get:
+      tags:
+        - CameraInsightGenerator
+      parameters:
+        - name: streamName
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A configuration object for the insights generator algorithm.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/InsightsGeneratorConfig'
+
+  # </CameraInsightGenerator>
+
+  /spec:
+    get:
+      tags:
+        - Specification
+      responses:
+        200:
+          description: Return the API specification
+          content: {}
+components:
+  schemas:
+
+    Camera:
+      description: A camera input object
+      required:
+        - name
+        - created
+        - cameraType
+        - streamName
+        - status
+      type: object
+      properties:
+        name:
+          type: string
+          example: Henry Street
+        created:
+          type: string
+          example: "2020-01-01 10:10:10"
+        cameraType:
+          type: integer
+          example: 1
+        streamName:
+          type: string
+          example: henry_street
+        status:
+          type: integer
+          example: 2
+
+    CameraBody:
+      description: A camera object response body
+      required:
+        - id
+        - name
+        - created
+        - model
+        - resolutionWidth
+        - resolutionHeight
+        - manufacturer
+        - status
+        - lat
+        - lng
+        - height
+        - angle
+        - cornerMaskX1
+        - cornerMaskY1
+        - cornerMaskX2
+        - cornerMaskY2
+        - cornerMaskX3
+        - cornerMaskY3
+        - cornerMaskX4
+        - cornerMaskY4
+        - maxSnakeLen
+        - heatmapColumns
+        - countLineX1
+        - countLineX2
+        - countLineY1
+        - countLineY2
+        - transformationShapeWidth
+        - transformationShapeHeight
+        - cameraRoiLength
+        - roiGroundCoverage
+        - speedDivider
+        - socialDistanceGuideline
+        - clearPathsFrameInterval
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Bertram Gilfoyle"
+        created:
+          type: string
+          example: "2020-01-01T10:10:10.000Z"
+        model:
+          type: string
+          example: "Lepton 3.5"
+        resolutionWidth:
+          type: integer
+          example: 160
+        resolutionHeight:
+          type: integer
+          example: 120
+        manufacturer:
+          type: string
+          example: "Flir"
+        status:
+          type: string
+          example: "OFFLINE"
+        lat:
+          type: number
+          format: double
+          example: 52.659027
+        lng:
+          type: number
+          format: double
+          example: -8.635959
+        height:
+          type: number
+          format: double
+          example: 2.5
+        angle:
+          type: number
+          format: double
+          example: 90.5
+        cornerMaskX1:
+          type: number
+          format: double
+          example: 0.01
+        cornerMaskY1:
+          type: number
+          format: double
+          example: 0.02
+        cornerMaskX2:
+          type: number
+          format: double
+          example: 0.03
+        cornerMaskY2:
+          type: number
+          format: double
+          example: 0.04
+        cornerMaskX3:
+          type: number
+          format: double
+          example: 0.05
+        cornerMaskY3:
+          type: number
+          format: double
+          example: 0.06
+        cornerMaskX4:
+          type: number
+          format: double
+          example: 0.07
+        cornerMaskY4:
+          type: number
+          format: double
+          example: 0.08
+        maxSnakeLen:
+          type: integer
+          example: 10
+        heatmapColumns:
+          type: integer
+          example: 25
+        countLineX1:
+          type: number
+          format: double
+          example: 0.9
+        countLineY1:
+          type: number
+          format: double
+          example: 0.1
+        countLineX2:
+          type: number
+          format: double
+          example: 0.11
+        countLineY2:
+          type: number
+          format: double
+          example: 0.12
+        transformationShapeWidth:
+          type: integer
+          example: 50
+        transformationShapeHeight:
+          type: integer
+          example: 40
+        cameraRoiLength:
+          type: integer
+          example: 20
+        roiGroundCoverage:
+          type: number
+          format: double
+          example: 30.3
+        speedDivider:
+          type: number
+          format: double
+          example: 5.5
+        socialDistanceGuideline:
+          type: number
+          format: double
+          example: 40.4
+        clearPathsFrameInterval:
+          type: integer
+          example: 50
+
+    CameraInsights:
+      description: A camera capture input object.
+      required:
+        - cameraId
+        - startFrameTime
+        - endFrameTime
+        - personCount
+        - personCountRight
+        - personCountLeft
+        - avgPersonSpeed
+        - estTimeSpent
+        - socialDistCompliance
+        - medianDensity
+        - heatmap
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        startFrameTime:
+          type: integer
+          example: 1594393044811
+        endFrameTime:
+          type: integer
+          example: 1594393383718
+        personCount:
+          type: integer
+          example: 2
+        personCountRight:
+          type: integer
+          example: 4
+        personCountLeft:
+          type: integer
+          example: 6
+        avgPersonSpeed:
+          type: number
+          format: double
+          example: 5.5
+        estTimeSpent:
+          type: number
+          format: double
+          example: 6.6
+        socialDistCompliance:
+          type: integer
+          example: 70
+        medianDensity:
+          type: integer
+          example: 12
+        heatmap:
+          type: array
+          example: [
+            0,0,0,0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,
+            0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,
+            0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,
+            0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
+            2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+            7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
+            7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,
+            6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,
+            3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,
+            1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,0,
+            6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,0,3,
+            0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,0,3,9
+          ]
+
+    CameraPersonCount:
+      description: A person capture object.
+      required:
+        - cameraId
+        - captureStart
+        - personsCounted
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        captureStart:
+          type: string
+          example: "2020-01-01 10:10:10"
+        personsCounted:
+          type: integer
+          example: 420
+
+    CameraWalkingPace:
+      description: A walking pace object.
+      required:
+        - cameraId
+        - captureStart
+        - avgPersonSpeed
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        captureStart:
+          type: string
+          example: "2020-01-01 10:10:10"
+        avgPersonSpeed:
+          type: number
+          format: double
+          example: 69.69
+
+    CameraTimeSpent:
+      description: A time spent object.
+      required:
+        - cameraId
+        - captureStart
+        - estTimeSpent
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        captureStart:
+          type: string
+          example: "2020-01-01 10:10:10"
+        estTimeSpent:
+          type: number
+          format: double
+          example: 69.69
+
+    Heatmap:
+      description: A heatmap object
+      required:
+        - mapMatrix
+      properties:
+        mapMatrix:
+          type: array
+          example: [
+            0,0,0,0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,
+            0,0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,
+            0,0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,
+            0,2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
+            2,7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+            7,7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
+            7,6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,
+            6,3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,
+            3,1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,
+            1,6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,0,
+            6,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,0,3,
+            0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,7,3,0,3,9
+          ]
+
+    CameraName:
+      description: A name for a given camera.
+      required:
+        - cameraName
+      type: object
+      properties:
+        cameraName:
+          type: string
+          example: Guilfoyle
+    
+    TotalCameraPersonCount:
+      description: A sum of all counts on a given day for a chosen camera id.
+      required:
+        - cameraId
+        - date
+        - personCount
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        date:
+          type: string
+          example: "2020-01-01"
+        personCount:
+          type: integer
+          example: 90210
+
+    TotalCameraDensity:
+      description: A density average for a given day.
+      required:
+        - cameraId
+        - date
+        - density
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        date:
+          type: string
+          example: "2020-01-01 10:10:10"
+        density:
+          type: integer
+          example: 4494
+
+    TotalCameraWalkingPace:
+      description: A walking pace average for a given day.
+      required:
+        - cameraId
+        - date
+        - avgPersonSpeed
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        date:
+          type: string
+          example: "2020-01-01 10:10:10"
+        avgPersonSpeed:
+          type: number
+          format: double
+          example: 69.69
+
+    TotalCameraTimeSpent:
+      description: A time spent average for a given day.
+      required:
+        - cameraId
+        - date
+        - estTimeSpent
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        date:
+          type: string
+          example: "2020-01-01 10:10:10"
+        estTimeSpent:
+          type: number
+          format: double
+          example: 69.69
+
+    TotalCameraSocialDistanceAvg:
+      description: A socail distance average for a given day.
+      required:
+        - cameraId
+        - date
+        - socialDistCompliance
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        date:
+          type: string
+          example: "2020-01-01 10:10:10"
+        socialDistCompliance:
+          type: number
+          format: double
+          example: 69.69
+
+    CameraBuildConfig:
+      description: A build configuration associated with a cameras physical install.
+      required:
+        - cameraId
+        - lat
+        - lng
+        - height
+        - angle
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        lat:
+          type: number
+          format: double
+          example: 52.6590258
+        lng:
+          type: number
+          format: double
+          example: -8.6359593
+        height:
+          type: number
+          format: double
+          example: 2.5
+        angle:
+          type: number
+          format: double
+          example: 90
+
+    CameraAppConfig:
+      description: An application configuration associated with a cameras software settings.
+      required:
+        - cameraId
+        - created
+        - cornerMaskX1
+        - cornerMaskY1
+        - cornerMaskX2
+        - cornerMaskY2
+        - cornerMaskX3
+        - cornerMaskY3
+        - cornerMaskX4
+        - cornerMaskY4
+        - minPointsInPath
+        - writePathsToDynamo
+        - roundPlaces
+        - maxSnakeLen
+        - heatmapColumns
+        - countLineX1
+        - countLineY1
+        - countLineX2
+        - countLineY2
+        - transformationShapeWidth
+        - transformationShapeHeight
+        - cameraRoiLength
+        - roiGroundCoverage
+        - speedDivider
+        - socialDistanceGuideline
+        - clearPathsFrameInterval
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        created:
+          type: string
+          example: "2020-01-01 10:10:10"
+        cornerMaskX1:
+          type: number
+          format: double
+          example: 0.01
+        cornerMaskY1:
+          type: number
+          format: double
+          example: 0.02
+        cornerMaskX2:
+          type: number
+          format: double
+          example: 0.03
+        cornerMaskY2:
+          type: number
+          format: double
+          example: 0.04
+        cornerMaskX3:
+          type: number
+          format: double
+          example: 0.05
+        cornerMaskY3:
+          type: number
+          format: double
+          example: 0.06
+        cornerMaskX4:
+          type: number
+          format: double
+          example: 0.07
+        cornerMaskY4:
+          type: number
+          format: double
+          example: 0.08
+        maxSnakeLen:
+          type: integer
+          example: 10
+        heatmapColumns:
+          type: integer
+          example: 10
+        countLineX1:
+          type: number
+          format: double
+          example: 0.09
+        countLineY1:
+          type: number
+          format: double
+          example: 0.1
+        countLineX2:
+          type: number
+          format: double
+          example: 0.11
+        countLineY2:
+          type: number
+          format: double
+          example: 0.12
+        transformationShapeWidth:
+          type: integer
+          example: 50
+        transformationShapeHeight:
+          type: integer
+          example: 60
+        cameraRoiLength:
+          type: integer
+          example: 20
+        roiGroundCoverage:
+          type: number
+          format: double
+          example: 30.3
+        speedDivider:
+          type: number
+          format: double
+          example: 5.5
+        socialDistanceGuideline:
+          type: number
+          format: double
+          example: 40.4
+        clearPathsFrameInterval:
+          type: integer
+          example: 50
+
+    CameraSocialDistAvg:
+      description: Average social distance compliance
+      required:
+        - cameraId
+        - captureStart
+        - personsCounted
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        captureStart:
+          type: string
+          example: "2020-01-01 10:10:10"
+        personsCounted:
+          type: number
+          format: double
+          example: 30.33
+
+    InsightsGeneratorConfig:
+      description: A config object for the insights generator algorithm
+      required:
+        - cameraId
+        - streamName
+        - resolutionWidth
+        - resolutionHeight
+        - cornerMaskX1
+        - cornerMaskX2
+        - cornerMaskX3
+        - cornerMaskX4
+        - cornerMaskY1
+        - cornerMaskY2
+        - cornerMaskY3
+        - cornerMaskY4
+        - minPointsInPath
+        - writePathsToDynamo
+        - clearPathsFrameInterval
+        - roundPlaces
+        - maxSnakeLen
+        - heatmapColumns
+        - countLineX1
+        - countLineX2
+        - countLineY1
+        - countLineY2
+        - transformationShapeWidth
+        - transformationShapeHeight
+        - cameraRoiLength
+        - roiGroundCoverage
+        - speedDivider
+        - socialDistanceGuideline
+      type: object
+      properties:
+        cameraId:
+          type: integer
+          example: 1
+        streamName:
+          type: string
+          example: bertram_gilfoyle
+        resolutionWidth:
+          type: integer
+          example: 160
+        resolutionHeight:
+          type: integer
+          example: 120
+        cornerMaskX1:
+          type: number
+          format: double
+          example: 0.01
+        cornerMaskY1:
+          type: number
+          format: double
+          example: 0.02
+        cornerMaskX2:
+          type: number
+          format: double
+          example: 0.03
+        cornerMaskY2:
+          type: number
+          format: double
+          example: 0.04
+        cornerMaskX3:
+          type: number
+          format: double
+          example: 0.05
+        cornerMaskY3:
+          type: number
+          format: double
+          example: 0.06
+        cornerMaskX4:
+          type: number
+          format: double
+          example: 0.07
+        cornerMaskY4:
+          type: number
+          format: double
+          example: 0.08
+        minPointsInPath:
+          type: integer
+          example: 3
+        writePathsToDynamo:
+          type: integer
+          example: 1
+        roundPlaces:
+          type: integer
+          example: 2
+        maxSnakeLen:
+          type: integer
+          example: 10
+        heatmapColumns:
+          type: integer
+          example: 10
+        countLineX1:
+          type: number
+          format: double
+          example: 0.09
+        countLineY1:
+          type: number
+          format: double
+          example: 0.1
+        countLineX2:
+          type: number
+          format: double
+          example: 0.11
+        countLineY2:
+          type: number
+          format: double
+          example: 0.12
+        transformationShapeWidth:
+          type: integer
+          example: 50
+        transformationShapeHeight:
+          type: integer
+          example: 60
+        cameraRoiLength:
+          type: integer
+          example: 20
+        roiGroundCoverage:
+          type: number
+          format: double
+          example: 30.3
+        speedDivider:
+          type: number
+          format: double
+          example: 5.5
+        socialDistanceGuideline:
+          type: number
+          format: double
+          example: 40.4
+        clearPathsFrameInterval:
+          type: integer
+          example: 50
+
+    Error:
+      type: object
+      additionalProperties: true

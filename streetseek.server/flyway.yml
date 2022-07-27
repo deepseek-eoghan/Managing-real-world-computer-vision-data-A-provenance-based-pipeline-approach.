@@ -1,0 +1,23 @@
+version: '3'
+services:
+  info:
+    image: boxfuse/flyway
+    command: info
+    volumes:
+      - ./docker/mysql/migrations/config:/flyway/conf
+      - ./docker/mysql/migrations/sql:/flyway/sql
+    network_mode: "host"
+  migrate:
+    image: boxfuse/flyway
+    command: migrate
+    volumes:
+      - ./docker/mysql/migrations/config:/flyway/conf
+      - ./docker/mysql/migrations/sql:/flyway/sql
+    network_mode: "host"
+  clean:
+    image: boxfuse/flyway
+    command: clean
+    volumes:
+      - ./docker/mysql/migrations/config:/flyway/conf
+      - ./docker/mysql/migrations/sql:/flyway/sql
+    network_mode: "host"

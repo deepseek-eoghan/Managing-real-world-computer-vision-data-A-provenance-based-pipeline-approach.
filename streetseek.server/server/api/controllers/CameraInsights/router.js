@@ -1,0 +1,71 @@
+import * as express from 'express';
+import controller from './controller';
+
+export default express
+  .Router()
+  .post('/upload-insight', controller.createCapture)
+  .post('/daily-aggregator', controller.setMetricDailyAggregation)
+  .get(
+    '/person-count/:date/by/hour/by/camera/id/:cameraId',
+    controller.getPersonCountHourlyByDay
+  )
+  .get(
+    '/person-count/:date/minute/interval/:interval/by/camera/id/:cameraId',
+    controller.getPersonCountByDayOnMinuteInterval
+  )
+  .get(
+    '/person-count/total/for/day/:date/by/camera/id/:cameraId',
+    controller.getTotalPersonCountForDay
+  )
+  .get(
+    '/person-count/total/per/day/between/dates/start/:startDate/end/:endDate/by/camera/id/:cameraId',
+    controller.getTotalPersonForEachDayInDateRange
+  )
+  .get(
+    '/social-distancing/average/total/for/day/:date/by/camera/id/:cameraId',
+    controller.getTotalSocialDistanceAverageForDay
+  )
+  .get(
+    '/walking-pace/average/total/for/day/:date/by/camera/id/:cameraId',
+    controller.getTotalWalkingPaceAverageForDay
+  )
+  .get(
+    '/walking-pace/average/:date/minute/interval/:interval/by/camera/id/:cameraId',
+    controller.getWalkingPaceAverageByDayOnMinuteInterval
+  )
+  .get(
+    '/time-spent/average/:date/minute/interval/:interval/by/camera/id/:cameraId',
+    controller.getTimeSpentByDayOnMinuteInterval
+  )
+  .get(
+    '/social-distancing/average/total/per/day/between/dates/start/:startDate/end/:endDate/by/camera/id/:cameraId',
+    controller.getSocialDistanceAverageForEachDayInDateRange
+  )
+  .get(
+    '/walking-pace/average/total/per/day/between/dates/start/:startDate/end/:endDate/by/camera/id/:cameraId',
+    controller.getWalkingPaceAverageForEachDayInDateRange
+  )
+  .get(
+    '/density/average/total/per/day/between/dates/start/:startDate/end/:endDate/by/camera/id/:cameraId',
+    controller.getDensityAverageForEachDayInDateRange
+  )
+  .get(
+    '/time-spent/average/total/per/day/between/dates/start/:startDate/end/:endDate/by/camera/id/:cameraId',
+    controller.getTimeSpentAverageForEachDayInDateRange
+  )
+  .get(
+    '/time-spent/average/total/for/day/:date/by/camera/id/:cameraId',
+    controller.getTotalTimeSpentForDay
+  )
+  .get(
+    '/heatmap/total/for/day/:date/by/camera/id/:cameraId',
+    controller.getTotalHeatMapForDay
+  )
+  .get(
+    '/density/average/total/for/day/:date/by/camera/id/:cameraId',
+    controller.getTotalDensityForDay
+  )
+  .get(
+    '/social-distancing/average/:date/minute/interval/:interval/by/camera/id/:cameraId',
+    controller.getSocialDistanceAverageByDayOnMinuteInterval
+  );

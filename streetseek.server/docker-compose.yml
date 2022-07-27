@@ -1,0 +1,19 @@
+version: '3'
+services:
+  db:
+    image: mysql:5.7.29
+    volumes: 
+      - ./docker/mysql/setup:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=P@ssw0rd
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - 3310:3306
+  migration:
+    image: boxfuse/flyway
+    command: -url=jdbc:mysql://db -user=root -password=P@ssw0rd -connectRetries=60 migrate
+    volumes:
+      - ./docker/mysql/migrations/config:/flyway/conf
+      - ./docker/mysql/migrations/sql:/flyway/sql
+    depends_on:
+      - db
