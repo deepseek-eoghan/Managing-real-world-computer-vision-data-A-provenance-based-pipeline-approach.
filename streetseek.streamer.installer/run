@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## THIS FILE IS FOR TESTING PURPOSES ONLY
+## LOGS WILL BE DISPLAYED IN TERMINAL
+
+# Get Variables from the .env file
+export $(cat /home/pi/.env | xargs)
+
+# Docker-compose up
+docker-compose up

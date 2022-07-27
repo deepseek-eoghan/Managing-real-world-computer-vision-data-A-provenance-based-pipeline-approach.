@@ -1,0 +1,16 @@
+#!/bin/bash
+
+REBOOT_TIME="$(uptime -s | sed 's/ /_/')"
+
+
+# Get Variables from the .env file
+export $(cat /home/pi/.env | xargs)
+
+if [ "$LAST_REBOOT_TIME" != "$REBOOT_TIME" ]; then
+
+    /usr/bin/aws cloudwatch put-metric-data --metric-name "$KINESIS_STREAM_NAME" --namespace Streetseek-Hardware-Reboot --value 1 --timestamp "$(date -Is)" --region eu-west-1
+
+    # Set OLD_REBOOT_TIME to Current REBOOT_TIME
+    sed -i '7s/.*/LAST_REBOOT_TIME='"$REBOOT_TIME"'/' /home/pi/.env
+
+fi

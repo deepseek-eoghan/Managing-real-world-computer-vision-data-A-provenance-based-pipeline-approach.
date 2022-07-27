@@ -1,0 +1,14 @@
+#!/bin/bash
+
+CPU_TEMP="$(vcgencmd measure_temp | sed 's/temp=//g' | sed 's/..$//')"
+
+TEMP_RESULTS=~/tempResults
+if [[ ! -f "$TEMP_RESULTS" ]]; then
+    touch "$TEMP_RESULTS"
+fi
+
+# Get Variables from the .env file
+export $(cat /home/pi/.env | xargs)
+
+/usr/bin/aws cloudwatch put-metric-data --metric-name "$KINESIS_STREAM_NAME" --namespace Streetseek-Hardware-Temperatures --value "$CPU_TEMP" --timestamp "$(date -Is)" --region eu-west-1
+

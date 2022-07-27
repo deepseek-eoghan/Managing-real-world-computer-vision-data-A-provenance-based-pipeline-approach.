@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  stream:
+    env_file:
+      - ~/.env
+    image: 439151388240.dkr.ecr.eu-west-1.amazonaws.com/streetseek-streamer:latest
+    devices:
+      - "/dev/video0:/dev/video0"
+      - "/dev/vchiq:/dev/vchiq"
+    restart: unless-stopped
+    command: gst-launch-1.0 -v v4l2src device=/dev/video0 ! video/x-raw,format=GRAY8 ! videoconvert ! video/x-raw ! videorate ! x264enc bframes=0 key-int-max=2 bitrate=800 tune=zerolatency ! video/x-h264,stream-format=avc,alignment=au,profile=baseline ! kvssink storage-size=3012000 stream-name="${KINESIS_STREAM_NAME}" access-key="${AWS_ACCESS_KEY_ID}" secret-key="${AWS_SECRET_ACCESS_KEY}" aws-region="${AWS_DEFAULT_REGION}"

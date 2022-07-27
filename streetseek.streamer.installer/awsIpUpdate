@@ -1,0 +1,37 @@
+#!/bin/bash
+
+createTunnel() {
+   echo createTunnel Function Called
+   ssh -o ExitOnForwardFailure=yes -f -N -R "$SSH_PORT":localhost:22 ubuntu@ec2-54-216-121-74.eu-west-1.compute.amazonaws.com
+   if [[ $? -eq 0 ]]; then
+      echo Tunnel to jumpbox created successfull
+   else
+      echo An error occurred creating a tunnel to jumpbox. RC was $?
+   fi
+}
+
+# Get Variables from the .env file
+export $(cat /home/pi/.env | xargs)
+
+# Get the current IP
+IP="$(curl icanhazip.com)"
+
+# Check if ssh is running
+PIDOF_SSH="$(pidof ssh)"
+
+if [[ "$OLD_IP" != "$IP" || -z "$PIDOF_SSH" ]]; then
+       # Add new IP to secutiry group
+       aws ec2 authorize-security-group-ingress --group-name BastionServer --protocol tcp --port 22 --cidr "$IP"/32
+
+       # Remove OLD_IP from security group if not the default ip
+       if [[ "$OLD_IP" != "212" && "$OLD_IP" != "$IP" ]]; then
+         aws ec2 revoke-security-group-ingress --group-name BastionServer --protocol tcp --port 22 --cidr "$OLD_IP"/32
+       fi
+
+       # Set OLD_IP to Current_IP
+       sed -i '5s/.*/OLD_IP='"$IP"'/' /home/pi/.env
+
+      # Create the tunnel
+      createTunnel
+      echo OK
+fi

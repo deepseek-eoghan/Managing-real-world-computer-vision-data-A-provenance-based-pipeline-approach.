@@ -1,0 +1,7 @@
+#!/bin/bash
+
+CONTAINER_NAME="streetseekstreamerinstaller_stream_1"
+if [ "$( docker container inspect -f '{{.State.Running}}' $CONTAINER_NAME )" == "false" ]; 
+then
+    sudo docker start streetseekstreamerinstaller_stream_1
+fi
